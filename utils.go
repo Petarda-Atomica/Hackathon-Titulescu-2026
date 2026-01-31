@@ -57,34 +57,31 @@ func getSceneName(filePath string) (string, error) {
 }
 
 func renderManim(pythonFile string, outputName string) (string, error) {
-	// Extract scene name
 	sceneName, _ := getSceneName(pythonFile)
-
-	// Define where you want the media to live
 	home, _ := os.UserHomeDir()
-	cwd, _ := filepath.Abs(home)
-	mediaDir := filepath.Join(cwd, "output_media")
+	mediaDir := filepath.Join(home, "output_media")
 
-	// Prepare the command
-	// -p: preview (optional)
-	// -o: specific filename
-	// --media_dir: where to save the folders
+	// Run Manim
 	cmd := exec.Command("python3", "-m", "manim", pythonFile, sceneName, "-o", outputName, "--media_dir", mediaDir)
-
-	// Capture output for debugging
-	out, err := cmd.CombinedOutput()
-	if err != nil {
+	if out, err := cmd.CombinedOutput(); err != nil {
 		return "", fmt.Errorf("render failed: %s\n%s", err, string(out))
 	}
 
-	// Manim follows a specific folder structure:
-	// {media_dir}/videos/{python_file_name}/{quality}/{outputName}.mp4
-	outputPath := filepath.Join(mediaDir, "videos",
-		filepath.Base(pythonFile[:len(pythonFile)-len(filepath.Ext(pythonFile))]),
-		"1080p60", // Default quality folder
-		outputName+".mp4")
+	// Get script name without extension
+	scriptBase := filepath.Base(pythonFile)
+	scriptName := scriptBase[:len(scriptBase)-len(filepath.Ext(scriptBase))]
 
-	return outputPath, nil
+	// Search for the file instead of hardcoding '1080p60'
+	// Pattern: {mediaDir}/videos/{scriptName}/*/{outputName}.mp4
+	searchPattern := filepath.Join(mediaDir, "videos", scriptName, "*", outputName+".mp4")
+	matches, err := filepath.Glob(searchPattern)
+
+	if err != nil || len(matches) == 0 {
+		return "", fmt.Errorf("could not find rendered file at %s", searchPattern)
+	}
+
+	// Return the first match found
+	return matches[0], nil
 }
 
 func copyToDir(srcPath, dstDir string) error {

@@ -4,12 +4,12 @@ type snippet struct {
     Content_type string `json:"content-type"
 
     // Represents either the raw markdown text or a prompt which will be used by another AI to create the manim animation
-    // The prompt must be detailed, concise and clearly state that a manim animation is the expected output and nopthing else
+    // The prompt must be detailed, concise and clearly state that a manim animation is the expected output and nothing else
     // The animation shouldn't be longer than a couple of seconds
     Content string `json:"content"`
 }
-Everything the user sees(text, labels in animation) are to be displayed in the same language as used in the input photos. If no language can be identified, use English. The prompt for creating the manim animations should be in English at all times. You must adhere to the JSON structure I gave you!
-Reminder JSON structure:
+Everything the user sees(text, labels in animation) are to be displayed in the same language as used in the input photos. If no language can be identified, use English. Manim and all of its dependencies are already installed. The prompt for creating the manim animations should be in English at all times. You must adhere to the JSON structure I gave you!
+Reminder of the JSON structure:
 [
     {
     "content-type":"text/animation"

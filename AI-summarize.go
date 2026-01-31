@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 )
 
@@ -44,13 +45,17 @@ func makeAnimation(prompt string, index int) {
 
 	// Run code
 	log.Println("Rendering animation...")
-	out, err := renderManim(workingDir+"/code.py", fmt.Sprintf("animation%d.mp4", index))
+	out, err := renderManim(workingDir+"/code.py", fmt.Sprintf("animation%d", index))
 	if err != nil {
-		log.Panic(err)
+		log.Println(err)
 	}
 
 	// Copy output to the lesson folder
-	copyToDir(out, "lessons")
+	wd, _ := os.Getwd()
+	err = copyToDir(out, filepath.Join(wd, "lesson"))
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func makeLesson(photos64 []string) {
@@ -75,14 +80,16 @@ func makeLesson(photos64 []string) {
 	}
 	prompt := strings.ReplaceAll(string(p), "%PHOTOS_LOCATION%", photoListString)
 	cmd := exec.Command("gemini", "-p", prompt, "-m", "gemini-3-flash-preview")
-	var stdout bytes.Buffer
+	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 
 	// Run AI analysis
 	log.Println("Running AI...")
 	log.Println("This could take a while...")
 	err = cmd.Run()
 	if err != nil {
+		log.Println(stderr.String())
 		log.Panic(err)
 	}
 
