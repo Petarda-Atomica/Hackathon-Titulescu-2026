@@ -27,6 +27,7 @@ func makeAnimation(prompt string, index int) {
 
 	// Make work folder
 	workingDir := fmt.Sprintf("jobs/worker_animation%d", index)
+	os.RemoveAll(workingDir)
 	os.Mkdir(workingDir, 0755)
 
 	// Ask AI
